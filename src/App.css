@@ -33,6 +33,13 @@
   }
 }
 
+@font-face {
+  font-family: 'Gyoshokk';
+  src: url('./assets/fonts/Gyoshokk.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+
 .card {
   padding: 2em;
 }
