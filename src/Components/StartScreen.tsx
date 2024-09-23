@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from "react";
 import { VStack, Button, Heading, Text } from "@yamada-ui/react";
 
@@ -6,26 +7,44 @@ interface StartScreenProps {
 }
 
 export const StartScreen: React.FC<StartScreenProps> = ({ onStart }) => {
-  const [selectedDifficulty, setSelectedDifficulty] = useState<
-    "easy" | "medium" | "hard" | null
-  >(null);
+  const difficulties: Array<"easy" | "medium" | "hard"> = [
+    "easy",
+    "medium",
+    "hard",
+  ];
+  const [selectedIndex, setSelectedIndex] = useState<number>(0);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.code === "Space") {
-        e.preventDefault();
-        if (selectedDifficulty) {
-          onStart(selectedDifficulty);
-        }
+      switch (e.key) {
+        case "ArrowUp":
+          e.preventDefault();
+          setSelectedIndex((prevIndex) =>
+            prevIndex > 0 ? prevIndex - 1 : difficulties.length - 1
+          );
+          break;
+        case "ArrowDown":
+          e.preventDefault();
+          setSelectedIndex((prevIndex) =>
+            prevIndex < difficulties.length - 1 ? prevIndex + 1 : 0
+          );
+          break;
+        case "Enter":
+        case " ":
+          e.preventDefault();
+          onStart(difficulties[selectedIndex]);
+          break;
+        default:
+          break;
       }
     };
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedDifficulty, onStart]);
+  }, [selectedIndex, onStart, difficulties]);
 
-  const handleDifficultySelect = (difficulty: "easy" | "medium" | "hard") => {
-    setSelectedDifficulty(difficulty);
+  const handleDifficultySelect = (index: number) => {
+    setSelectedIndex(index);
   };
 
   return (
@@ -34,24 +53,23 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStart }) => {
         織打
       </Heading>
       <VStack>
-        <Button
-          onClick={() => handleDifficultySelect("easy")}
-          variant={selectedDifficulty === "easy" ? "solid" : "outline"}
-          colorScheme="green">
-          小田(簡単)
-        </Button>
-        <Button
-          onClick={() => handleDifficultySelect("medium")}
-          variant={selectedDifficulty === "medium" ? "solid" : "outline"}
-          colorScheme="blue">
-          尾田(普通)
-        </Button>
-        <Button
-          onClick={() => handleDifficultySelect("hard")}
-          variant={selectedDifficulty === "hard" ? "solid" : "outline"}
-          colorScheme="red">
-          織田(難しい)
-        </Button>
+        {difficulties.map((difficulty, index) => (
+          <Button
+            key={difficulty}
+            onClick={() => handleDifficultySelect(index)}
+            variant={selectedIndex === index ? "solid" : "outline"}
+            colorScheme={
+              difficulty === "easy"
+                ? "green"
+                : difficulty === "medium"
+                ? "blue"
+                : "red"
+            }>
+            {difficulty === "easy" && "小田(簡単)"}
+            {difficulty === "medium" && "尾田(普通)"}
+            {difficulty === "hard" && "織田(難しい)"}
+          </Button>
+        ))}
       </VStack>
       <Text>難易度を選択し、スペースキーを押してゲームを開始してください</Text>
     </VStack>
