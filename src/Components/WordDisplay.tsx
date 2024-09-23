@@ -3,40 +3,52 @@ import { Text, Box, VStack } from '@yamada-ui/react';
 
 interface WordDisplayProps {
   word: string;
-  fullRomaji: string;
-  userInput: string;
+  displayRomajiList: string[];
   isMistyped: boolean;
-  inputIndex: number;
+  currentKanaInput: string;
+  userInput: string;
 }
 
 export const WordDisplay: React.FC<WordDisplayProps> = ({
   word,
-  fullRomaji,
-  userInput,
+  displayRomajiList,
   isMistyped,
-  inputIndex,
+  currentKanaInput,
+  userInput,
 }) => {
   const renderKana = () => {
     return (
-      <Text fontSize="4xl" fontWeight="bold" textAlign="center">
-        {word}
-      </Text>
+      <Box textAlign="center">
+        <Text
+          fontSize="4xl"
+          fontWeight="bold"
+          color="black"
+        >
+          {word}
+        </Text>
+      </Box>
     );
   };
 
   const renderRomaji = () => {
-    const romajiChars = fullRomaji.split('');
-    const userInputChars = userInput.split('');
+    const totalRomaji = displayRomajiList.join('');
+    const combinedInput = userInput + currentKanaInput;
+    const totalRomajiChars = totalRomaji.split('');
+    const combinedInputChars = combinedInput.split('');
 
     return (
       <Box textAlign="center">
-        {romajiChars.map((char, index) => {
+        {totalRomajiChars.map((char, index) => {
           let color = 'black';
 
-          if (index < userInputChars.length) {
-            color = 'green'; // 正しく入力された文字
-          } else if (index === inputIndex && isMistyped) {
-            color = 'red'; // ミスタイプした文字
+          if (index < combinedInputChars.length) {
+            if (combinedInputChars[index] === char) {
+              color = 'green';
+            } else {
+              color = 'red';
+            }
+          } else if (index === combinedInputChars.length && isMistyped) {
+            color = 'red';
           }
 
           return (

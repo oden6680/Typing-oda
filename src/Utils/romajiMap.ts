@@ -103,7 +103,7 @@ export const kanaToRomajiMap: { [key: string]: string[] } = {
   りゃ: ["rya"],
   りゅ: ["ryu"],
   りょ: ["ryo"],
-  っ: ["xtsu", "ltu", "ltsu"],
+  っ: [""],
   ー: ["-"],
   ぁ: ["xa", "la"],
   ぃ: ["xi", "li"],
