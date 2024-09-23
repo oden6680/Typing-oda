@@ -1,36 +1,65 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { useState } from 'react';
-import { Game } from './Components/Game';
-import { StartScreen } from './Components/StartScreen';
-import { UIProvider, VStack } from '@yamada-ui/react';
+import React, { useState } from "react";
+import { Game } from "./Components/Game";
+import { StartScreen } from "./Components/StartScreen";
+import { UIProvider, VStack } from "@yamada-ui/react";
+import { Result } from "./Components/Result";
 
 const App: React.FC = () => {
-  const [gameState, setGameState] = useState<'start' | 'game'>('start');
-  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy');
-  const [gameResult, setGameResult] = useState<any>(null);
+  const [gameState, setGameState] = useState<"start" | "playing" | "result">(
+    "start"
+  );
+  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">(
+    "easy"
+  );
+  const [gameResult, setGameResult] = useState<{
+    score: number;
+    mistypeCount: number;
+    totalKeystrokes: number;
+  } | null>(null);
 
-  const handleStart = (selectedDifficulty: 'easy' | 'medium' | 'hard') => {
+  const handleStart = (selectedDifficulty: "easy" | "medium" | "hard") => {
     setDifficulty(selectedDifficulty);
-    setGameState('game');
+    setGameState("playing");
   };
 
-  const handleGameOver = (result: any) => {
+  const handleGameOver = (result: {
+    score: number;
+    mistypeCount: number;
+    totalKeystrokes: number;
+  }) => {
     setGameResult(result);
-    setGameState('start');
+    setGameState("result");
   };
 
-  const handleExitGame = () => {
-    setGameState('start');
+  const handleRestart = () => {
+    setGameState("start");
+    setGameResult(null);
+  };
+
+  const handleRetry = () => {
+    setGameState("playing");
+    setGameResult(null);
   };
 
   return (
     <UIProvider>
       <VStack align="center" justify="center" minH="100vh" w="100vw">
-        {gameState === 'start' ? (
-          <StartScreen onStart={handleStart} gameResult={gameResult} />
-        ) : (
-          <Game difficulty={difficulty} onGameOver={handleGameOver} onExit={handleExitGame} />
+        {gameState === "start" && <StartScreen onStart={handleStart} />}
+        {gameState === "playing" && (
+          <Game
+            difficulty={difficulty}
+            onGameOver={handleGameOver}
+            onExit={handleRestart}
+          />
         )}
+        {gameState === "result" &&
+          gameResult && (
+            <Result
+              result={gameResult}
+              onRestart={handleRestart}
+              onRetry={handleRetry}
+            />
+          )}
       </VStack>
     </UIProvider>
   );

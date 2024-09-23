@@ -1,5 +1,5 @@
-import React from 'react';
-import { Text, Box, VStack } from '@yamada-ui/react';
+import React from "react";
+import { Text, Box, VStack } from "@yamada-ui/react";
 
 interface WordDisplayProps {
   word: string;
@@ -19,11 +19,7 @@ export const WordDisplay: React.FC<WordDisplayProps> = ({
   const renderKana = () => {
     return (
       <Box textAlign="center">
-        <Text
-          fontSize="4xl"
-          fontWeight="bold"
-          color="black"
-        >
+        <Text fontSize="4xl" fontWeight="bold" color="black">
           {word}
         </Text>
       </Box>
@@ -31,24 +27,24 @@ export const WordDisplay: React.FC<WordDisplayProps> = ({
   };
 
   const renderRomaji = () => {
-    const totalRomaji = displayRomajiList.join('');
+    const totalRomaji = displayRomajiList.join("");
     const combinedInput = userInput + currentKanaInput;
-    const totalRomajiChars = totalRomaji.split('');
-    const combinedInputChars = combinedInput.split('');
+    const totalRomajiChars = totalRomaji.split("");
+    const combinedInputChars = combinedInput.split("");
 
     return (
       <Box textAlign="center">
         {totalRomajiChars.map((char, index) => {
-          let color = 'black';
+          let color = "black";
 
           if (index < combinedInputChars.length) {
             if (combinedInputChars[index] === char) {
-              color = 'green';
+              color = "green";
             } else {
-              color = 'red';
+              color = "red";
             }
           } else if (index === combinedInputChars.length && isMistyped) {
-            color = 'red';
+            color = "red";
           }
 
           return (
@@ -57,8 +53,7 @@ export const WordDisplay: React.FC<WordDisplayProps> = ({
               key={index}
               color={color}
               fontSize="xl"
-              fontWeight="bold"
-            >
+              fontWeight="bold">
               {char}
             </Text>
           );

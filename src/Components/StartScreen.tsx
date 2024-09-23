@@ -3,11 +3,9 @@ import { VStack, Button, Heading, Text } from '@yamada-ui/react';
 
 interface StartScreenProps {
   onStart: (difficulty: 'easy' | 'medium' | 'hard') => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  gameResult: any;
 }
 
-export const StartScreen: React.FC<StartScreenProps> = ({ onStart, gameResult }) => {
+export const StartScreen: React.FC<StartScreenProps> = ({ onStart }) => {
   const [selectedDifficulty, setSelectedDifficulty] = useState<'easy' | 'medium' | 'hard' | null>(null);
 
   useEffect(() => {
@@ -31,13 +29,6 @@ export const StartScreen: React.FC<StartScreenProps> = ({ onStart, gameResult })
   return (
     <VStack align="center">
       <Heading>織打</Heading>
-      {gameResult && (
-        <VStack>
-          <Text>スコア: {gameResult.score}</Text>
-          <Text>ミスタイプ数: {gameResult.mistypeCount}</Text>
-          <Text>総打鍵数: {gameResult.totalKeystrokes}</Text>
-        </VStack>
-      )}
       <VStack>
         <Button 
           onClick={() => handleDifficultySelect('easy')} 
