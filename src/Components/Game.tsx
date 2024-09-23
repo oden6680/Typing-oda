@@ -18,7 +18,7 @@ interface GameProps {
   onExit: () => void;
 }
 
-interface WordData extends EasyWordData {}
+type WordData = EasyWordData
 
 export const Game: React.FC<GameProps> = ({
   difficulty,
@@ -92,7 +92,6 @@ export const Game: React.FC<GameProps> = ({
         currentRomajiOptions = kanaToRomajiMap[combinedKana] || [""];
         i += 2;
       } else if (kana === 'ー') {
-        console.log('found ー');
         currentRomajiOptions = kanaToRomajiMap[kana] || ['-'];
         i += 1;
       } else {
