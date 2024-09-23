@@ -4,6 +4,9 @@ import { Timer } from "./Timer";
 import { Score } from "./Score";
 import { VStack } from "@yamada-ui/react";
 import { kanaToRomajiMap, isSmallKana } from "../Utils/romajiMap";
+import { wordsEasy, WordData as EasyWordData } from "../data/wordsEasy";
+import { wordsMedium } from "../data/wordsMedium";
+import { wordsHard } from "../data/wordsHard";
 
 interface GameProps {
   difficulty: "easy" | "medium" | "hard";
@@ -15,10 +18,7 @@ interface GameProps {
   onExit: () => void;
 }
 
-interface WordData {
-  kanji: string;
-  kana: string;
-}
+interface WordData extends EasyWordData {}
 
 export const Game: React.FC<GameProps> = ({
   difficulty,
@@ -40,30 +40,6 @@ export const Game: React.FC<GameProps> = ({
   const [mistypeCount, setMistypeCount] = useState(0);
   const [totalKeystrokes, setTotalKeystrokes] = useState(0);
   const [isGameOver, setIsGameOver] = useState(false);
-
-  const wordsEasy: WordData[] = [
-    { kanji: "こんにちは", kana: "こんにちは" },
-    { kanji: "さようなら", kana: "さようなら" },
-    { kanji: "ありがとう", kana: "ありがとう" },
-    { kanji: "おはよう", kana: "おはよう" },
-    { kanji: "こんばんは", kana: "こんばんは" },
-  ];
-
-  const wordsMedium: WordData[] = [
-    { kanji: "学生", kana: "がくせい" },
-    { kanji: "先生", kana: "せんせい" },
-    { kanji: "学校", kana: "がっこう" },
-    { kanji: "図書館", kana: "としょかん" },
-    { kanji: "病院", kana: "びょういん" },
-  ];
-
-  const wordsHard: WordData[] = [
-    { kanji: "経済", kana: "けいざい" },
-    { kanji: "政治", kana: "せいじ" },
-    { kanji: "文化", kana: "ぶんか" },
-    { kanji: "歴史", kana: "れきし" },
-    { kanji: "哲学", kana: "てつがく" },
-  ];
 
   useEffect(() => {
     initializeWord();
@@ -115,6 +91,10 @@ export const Game: React.FC<GameProps> = ({
         const combinedKana = kana + word[i + 1];
         currentRomajiOptions = kanaToRomajiMap[combinedKana] || [""];
         i += 2;
+      } else if (kana === 'ー') {
+        console.log('found ー');
+        currentRomajiOptions = kanaToRomajiMap[kana] || ['-'];
+        i += 1;
       } else {
         currentRomajiOptions = kanaToRomajiMap[kana] || [""];
         i += 1;
@@ -167,7 +147,7 @@ export const Game: React.FC<GameProps> = ({
 
       const key = e.key.toLowerCase();
 
-      if (key.length === 1 && /^[a-z]$/.test(key)) {
+      if (key.length === 1 && /^[a-z¥-]$/.test(key)) {
         e.preventDefault();
         setTotalKeystrokes((prev) => prev + 1);
 
