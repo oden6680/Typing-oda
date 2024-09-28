@@ -3,7 +3,7 @@ import { WordDisplay } from "./WordDisplay";
 import { Timer } from "./Timer";
 import { Score } from "./Score";
 import { VStack } from "@yamada-ui/react";
-import { kanaToRomajiMap, isSmallKana } from "../Utils/romajiMap";
+import { toRomaji } from "wanakana";
 import { wordsEasy, WordData as EasyWordData } from "../data/wordsEasy";
 import { wordsMedium } from "../data/wordsMedium";
 import { wordsHard } from "../data/wordsHard";
@@ -18,7 +18,7 @@ interface GameProps {
   onExit: () => void;
 }
 
-type WordData = EasyWordData
+type WordData = EasyWordData;
 
 export const Game: React.FC<GameProps> = ({
   difficulty,
@@ -29,7 +29,7 @@ export const Game: React.FC<GameProps> = ({
     kanji: "",
     kana: "",
   });
-  const [romajiList, setRomajiList] = useState<string[][]>([]);
+  const [romajiList, setRomajiList] = useState<string[]>([]);
   const [displayRomajiList, setDisplayRomajiList] = useState<string[]>([]);
   const [userInput, setUserInput] = useState("");
   const [currentKanaInput, setCurrentKanaInput] = useState("");
@@ -41,6 +41,10 @@ export const Game: React.FC<GameProps> = ({
   const [totalKeystrokes, setTotalKeystrokes] = useState(0);
   const [isGameOver, setIsGameOver] = useState(false);
 
+  const wordsEasyList: WordData[] = wordsEasy;
+  const wordsMediumList: WordData[] = wordsMedium;
+  const wordsHardList: WordData[] = wordsHard;
+
   useEffect(() => {
     initializeWord();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -49,11 +53,11 @@ export const Game: React.FC<GameProps> = ({
   const initializeWord = () => {
     let wordList: WordData[];
     if (difficulty === "easy") {
-      wordList = wordsEasy;
+      wordList = wordsEasyList;
     } else if (difficulty === "medium") {
-      wordList = wordsMedium;
+      wordList = wordsMediumList;
     } else {
-      wordList = wordsHard;
+      wordList = wordsHardList;
     }
     const newWord = wordList[Math.floor(Math.random() * wordList.length)];
     setCurrentWord(newWord);
@@ -61,64 +65,13 @@ export const Game: React.FC<GameProps> = ({
     setCurrentKanaInput("");
     setKanaIndex(0);
     setIsMistyped(false);
-    const romajiArray = convertKanaToRomaji(newWord.kana);
+    const romajiString = toRomaji(newWord.kana, {
+      useObsoleteKana: false,
+      passRomaji: false,
+    });
+    const romajiArray = romajiString.split("");
     setRomajiList(romajiArray);
-    const initialDisplayRomaji = romajiArray.map((options) => options[0]);
-    setDisplayRomajiList(initialDisplayRomaji);
-  };
-
-  const convertKanaToRomaji = (word: string): string[][] => {
-    const romajiArray: string[][] = [];
-    let i = 0;
-    let geminateConsonant = false;
-
-    while (i < word.length) {
-      const kana = word[i];
-
-      if (kana === "っ") {
-        geminateConsonant = true;
-        i += 1;
-        continue;
-      }
-
-      let currentRomajiOptions: string[] = [];
-
-      if (
-        i + 1 < word.length &&
-        isSmallKana(word[i + 1]) &&
-        word[i + 1] !== "っ"
-      ) {
-        const combinedKana = kana + word[i + 1];
-        currentRomajiOptions = kanaToRomajiMap[combinedKana] || [""];
-        i += 2;
-      } else if (kana === 'ー') {
-        currentRomajiOptions = kanaToRomajiMap[kana] || ['-'];
-        i += 1;
-      } else {
-        currentRomajiOptions = kanaToRomajiMap[kana] || [""];
-        i += 1;
-      }
-
-      if (
-        geminateConsonant &&
-        currentRomajiOptions.length > 0 &&
-        currentRomajiOptions[0].length > 0
-      ) {
-        const firstConsonant = currentRomajiOptions[0][0];
-        const modifiedOptions = currentRomajiOptions.map((romaji) => {
-          if (/^[bcdfghjklmnpqrstvwxyz]/.test(romaji)) {
-            return firstConsonant + romaji;
-          }
-          return romaji;
-        });
-        romajiArray.push(modifiedOptions);
-        geminateConsonant = false;
-      } else {
-        romajiArray.push(currentRomajiOptions);
-      }
-    }
-
-    return romajiArray;
+    setDisplayRomajiList(romajiArray.map((char) => char));
   };
 
   useEffect(() => {
@@ -150,60 +103,47 @@ export const Game: React.FC<GameProps> = ({
         e.preventDefault();
         setTotalKeystrokes((prev) => prev + 1);
 
-        const currentRomajiOptions = romajiList[kanaIndex];
-        const expectedRomajiList = currentRomajiOptions;
-
+        const expectedRomaji = romajiList[kanaIndex];
         const newCurrentKanaInput = currentKanaInput + key;
 
-        let matched = false;
+        if (newCurrentKanaInput === expectedRomaji) {
+          setUserInput((prev) => prev + newCurrentKanaInput);
+          setCurrentKanaInput("");
+          setKanaIndex(kanaIndex + 1);
+          setIsMistyped(false);
 
-        for (const expectedRomaji of expectedRomajiList) {
-          if (expectedRomaji.startsWith(newCurrentKanaInput)) {
-            matched = true;
-            if (expectedRomaji === newCurrentKanaInput) {
-              setUserInput((prev) => prev + newCurrentKanaInput);
-              setCurrentKanaInput("");
-              setKanaIndex(kanaIndex + 1);
-              setIsMistyped(false);
-
-              if (kanaIndex + 1 === romajiList.length) {
-                setScore((prev) => prev + 1);
-                initializeWord();
-              } else {
-                setDisplayRomajiList((prev) => {
-                  const newDisplayRomajiList = [...prev];
-                  newDisplayRomajiList[kanaIndex + 1] =
-                    romajiList[kanaIndex + 1][0];
-                  return newDisplayRomajiList;
-                });
-              }
-            } else {
-              setCurrentKanaInput(newCurrentKanaInput);
-              setIsMistyped(false);
-            }
-            break;
+          if (kanaIndex + 1 === romajiList.length) {
+            setScore((prev) => prev + 1);
+            initializeWord();
+          } else {
+            setDisplayRomajiList((prev) => {
+              const newDisplayRomajiList = [...prev];
+              newDisplayRomajiList[kanaIndex + 1] = romajiList[kanaIndex + 1];
+              return newDisplayRomajiList;
+            });
           }
-        }
-
-        if (!matched) {
+        } else if (expectedRomaji.startsWith(newCurrentKanaInput)) {
+          setCurrentKanaInput(newCurrentKanaInput);
+          setIsMistyped(false);
+        } else {
           setMistypeCount((prev) => prev + 1);
           setIsMistyped(true);
         }
-      } else if (key === "escape") {
+      } else if (e.code === "Escape") {
         e.preventDefault();
         onExit();
-      } else if (key === "backspace") {
+      } else if (e.key === "Backspace") {
         e.preventDefault();
         if (currentKanaInput.length > 0) {
           setCurrentKanaInput((prev) => prev.slice(0, -1));
           setIsMistyped(false);
         } else if (kanaIndex > 0) {
           setKanaIndex((prev) => prev - 1);
-          const previousRomaji = romajiList[kanaIndex - 1][0];
+          const previousRomaji = romajiList[kanaIndex - 1];
           setUserInput((prev) => prev.slice(0, -previousRomaji.length));
           setDisplayRomajiList((prev) => {
             const newDisplayRomajiList = [...prev];
-            newDisplayRomajiList[kanaIndex - 1] = romajiList[kanaIndex - 1][0];
+            newDisplayRomajiList[kanaIndex - 1] = romajiList[kanaIndex - 1];
             return newDisplayRomajiList;
           });
           setIsMistyped(false);
@@ -213,7 +153,6 @@ export const Game: React.FC<GameProps> = ({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     currentKanaInput,
     isGameOver,
